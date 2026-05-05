@@ -16,15 +16,18 @@ public class ExpenseEntryUI extends JFrame {
     private BudgetCycle currentCycle;
     private DashboardUI dashboardUI;
 
-    public ExpenseEntryUI(UserProfile userProfile, BudgetCycle currentCycle, DashboardUI dashboardUI) {
+    // FIX: Accept injected ExpenseTracker instead of instantiating it with missing parameters
+    public ExpenseEntryUI(UserProfile userProfile, BudgetCycle currentCycle,
+                          DashboardUI dashboardUI, ExpenseTracker expenseTracker) {
 
-        this.expenseTracker = new ExpenseTracker();
+        this.expenseTracker = expenseTracker;
         this.currentCycle = currentCycle;
         this.dashboardUI = dashboardUI;
 
         setTitle("Add Expense");
         setSize(300, 250);
         setLayout(new FlowLayout());
+        setLocationRelativeTo(null); // FIX: Center on screen
 
         amountField = new JTextField(10);
         categoryField = new JTextField(10);
@@ -35,7 +38,7 @@ public class ExpenseEntryUI extends JFrame {
 
         add(new JLabel("Amount"));
         add(amountField);
-        add(new JLabel("Category"));
+        add(new JLabel("Category/Note")); // FIX: Updated label
         add(categoryField);
         add(addBtn);
         add(cancelBtn);
@@ -49,9 +52,9 @@ public class ExpenseEntryUI extends JFrame {
 
     public void captureExpenseDetails() {
         String amountText = amountField.getText().trim();
-        String category = categoryField.getText().trim();
+        String note = categoryField.getText().trim(); // FIX: Treat this as note/category name
 
-        if (amountText.isEmpty() || category.isEmpty()) {
+        if (amountText.isEmpty() || note.isEmpty()) {
             showErrorMessage("All fields required");
             return;
         }
@@ -65,13 +68,19 @@ public class ExpenseEntryUI extends JFrame {
             return;
         }
 
-        boolean success = expenseTracker.addExpense(amount, category);
+        // FIX: Match the signature of logTransaction(amount, categoryId, note).
+        // Using a dummy category ID (1) for now since Categories are not fully implemented.
+        boolean success = expenseTracker.logTransaction(amount, 1, note);
 
         if (success) {
             showSuccessMessage("Expense added");
             if (dashboardUI != null) {
                 dashboardUI.refreshAfterTransaction();
             }
+            // FIX: Delay closing so user sees success message briefly
+            Timer timer = new Timer(1000, e -> dispose());
+            timer.setRepeats(false);
+            timer.start();
         } else {
             showErrorMessage("Error saving expense");
         }
