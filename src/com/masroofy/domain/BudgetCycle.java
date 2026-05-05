@@ -1,7 +1,7 @@
 package com.masroofy.domain;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-
+ 
 public class BudgetCycle {
     private int cycleId;
     private LocalDate startDate;
@@ -24,11 +24,14 @@ public class BudgetCycle {
     public void deductAmount(double amount) {
         this.remainingBalance -= amount;
     }
-
+ 
     public void addAmount(double amount) {
         this.remainingBalance += amount;
     }
-    public int getCycleId() { return cycleId; }
-    public double getTotalAllowance() { return totalAllowance; }
-    public double getRemainingBalance() { return remainingBalance; }
+    public int getCycleId()              { return cycleId; }
+    public double getTotalAllowance()    { return totalAllowance; }
+    public double getRemainingBalance()  { return remainingBalance; }
+    public LocalDate getStartDate()      { return startDate; }
+    public LocalDate getEndDate()        { return endDate; }
+    public void setCycleId(int cycleId)  { this.cycleId = cycleId; }
 }
