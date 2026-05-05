@@ -38,16 +38,16 @@ public class AuthUI extends JFrame {
         setVisible(true);
     }
 
-//    private void verify() {
-//        String pin = new String(pinField.getPassword());
-//
-//        if (userProfile.VerifyPIN(pin)) {
-//            new DashboardUI(userProfile);
-//            dispose();
-//        } else {
-//            ShowValidationError("Wrong PIN");
-//        }
-//    }
+    private void verify() {
+        String pin = new String(pinField.getPassword());
+
+        if (userProfile.VerifyPIN(pin)) {
+            new DashboardUI(userProfile);
+            dispose();
+        } else {
+            ShowValidationError("Wrong PIN");
+        }
+    }
 
     public void ShowValidationError(String msg) {
         messageLabel.setText(msg);
