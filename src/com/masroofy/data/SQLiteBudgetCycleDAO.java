@@ -4,6 +4,8 @@ import com.masroofy.domain.BudgetCycle;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList; // NEW CHANGE: Imported ArrayList
+import java.util.List;      // NEW CHANGE: Imported List
 
 /**
  * SQLiteBudgetCycleDAO
@@ -54,9 +56,9 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
     @Override
     public BudgetCycle getCurrentCycle() {
         String sql =
-            "SELECT * FROM " + DatabaseHelper.TABLE_CYCLES
-            + " ORDER BY " + DatabaseHelper.CYCLES_COL_ID + " DESC"
-            + " LIMIT 1;";
+                "SELECT * FROM " + DatabaseHelper.TABLE_CYCLES
+                        + " ORDER BY " + DatabaseHelper.CYCLES_COL_ID + " DESC"
+                        + " LIMIT 1;";
 
         try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
             ResultSet rs = pstmt.executeQuery();
@@ -67,6 +69,25 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
             System.err.println("getCurrentCycle failed: " + e.getMessage());
         }
         return null;
+    }
+
+    // NEW CHANGE: Added implementation to query the DB for all historical budget cycles.
+    @Override
+    public List<BudgetCycle> getAllCycles() {
+        List<BudgetCycle> cycles = new ArrayList<>();
+        String sql =
+                "SELECT * FROM " + DatabaseHelper.TABLE_CYCLES
+                        + " ORDER BY " + DatabaseHelper.CYCLES_COL_ID + " DESC;";
+
+        try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                cycles.add(mapRowToCycle(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("getAllCycles failed: " + e.getMessage());
+        }
+        return cycles;
     }
 
     /**
@@ -80,12 +101,12 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
     public boolean deleteCycle(int cycleId) {
         // First delete child transactions to respect foreign key constraint
         String deleteTransactions =
-            "DELETE FROM " + DatabaseHelper.TABLE_TRANSACTIONS
-            + " WHERE " + DatabaseHelper.TRANS_COL_CYCLE_ID + " = ?;";
+                "DELETE FROM " + DatabaseHelper.TABLE_TRANSACTIONS
+                        + " WHERE " + DatabaseHelper.TRANS_COL_CYCLE_ID + " = ?;";
 
         String deleteCycle =
-            "DELETE FROM " + DatabaseHelper.TABLE_CYCLES
-            + " WHERE " + DatabaseHelper.CYCLES_COL_ID + " = ?;";
+                "DELETE FROM " + DatabaseHelper.TABLE_CYCLES
+                        + " WHERE " + DatabaseHelper.CYCLES_COL_ID + " = ?;";
 
         try {
             dbConnection.setAutoCommit(false);
@@ -121,12 +142,12 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
 
     private boolean insertCycle(BudgetCycle cycle) {
         String sql =
-            "INSERT INTO " + DatabaseHelper.TABLE_CYCLES
-            + " (" + DatabaseHelper.CYCLES_COL_START_DATE + ", "
-                   + DatabaseHelper.CYCLES_COL_END_DATE   + ", "
-                   + DatabaseHelper.CYCLES_COL_ALLOWANCE  + ", "
-                   + DatabaseHelper.CYCLES_COL_BALANCE    + ") "
-            + "VALUES (?, ?, ?, ?);";
+                "INSERT INTO " + DatabaseHelper.TABLE_CYCLES
+                        + " (" + DatabaseHelper.CYCLES_COL_START_DATE + ", "
+                        + DatabaseHelper.CYCLES_COL_END_DATE   + ", "
+                        + DatabaseHelper.CYCLES_COL_ALLOWANCE  + ", "
+                        + DatabaseHelper.CYCLES_COL_BALANCE    + ") "
+                        + "VALUES (?, ?, ?, ?);";
 
         try (PreparedStatement pstmt = dbConnection.prepareStatement(
                 sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -156,12 +177,12 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
 
     private boolean updateCycle(BudgetCycle cycle) {
         String sql =
-            "UPDATE " + DatabaseHelper.TABLE_CYCLES + " SET "
-            + DatabaseHelper.CYCLES_COL_START_DATE + " = ?, "
-            + DatabaseHelper.CYCLES_COL_END_DATE   + " = ?, "
-            + DatabaseHelper.CYCLES_COL_ALLOWANCE  + " = ?, "
-            + DatabaseHelper.CYCLES_COL_BALANCE    + " = ? "
-            + "WHERE " + DatabaseHelper.CYCLES_COL_ID + " = ?;";
+                "UPDATE " + DatabaseHelper.TABLE_CYCLES + " SET "
+                        + DatabaseHelper.CYCLES_COL_START_DATE + " = ?, "
+                        + DatabaseHelper.CYCLES_COL_END_DATE   + " = ?, "
+                        + DatabaseHelper.CYCLES_COL_ALLOWANCE  + " = ?, "
+                        + DatabaseHelper.CYCLES_COL_BALANCE    + " = ? "
+                        + "WHERE " + DatabaseHelper.CYCLES_COL_ID + " = ?;";
 
         try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
             pstmt.setString(1, cycle.getStartDate().toString());
