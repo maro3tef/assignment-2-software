@@ -5,6 +5,7 @@ import com.masroofy.business.CalculationEngine;
 import com.masroofy.business.CycleManager;
 import com.masroofy.business.ExpenseTracker;
 import com.masroofy.data.DatabaseHelper;
+import com.masroofy.data.IBudgetCycleDAO;
 import com.masroofy.data.SQLiteBudgetCycleDAO;
 import com.masroofy.data.SQLiteTransactionDAO;
 import com.masroofy.domain.BudgetCycle;
@@ -25,7 +26,20 @@ public class Main {
  
         CycleManager   cycleManager   = new CycleManager(cycleDAO, calcEngine);
         ExpenseTracker expenseTracker = new ExpenseTracker(transactionDAO, cycleDAO, alertingSystem);
- 
+        System.out.println("--- All Historical Cycles ---");
+        List<BudgetCycle> cycleHistory = cycleManager.getCycleHistory();
+        if (cycleHistory.isEmpty()) {
+            System.out.println("No history found. The database is empty.");
+        } else {
+            for (BudgetCycle c : cycleHistory) {
+                System.out.println("Cycle ID: " + c.getCycleId() +
+                        " | Start: " + c.getStartDate() +
+                        " | End: " + c.getEndDate() +
+                        " | Allowance: " + c.getTotalAllowance() +
+                        " | Remaining Balance: " + c.getRemainingBalance());
+            }
+        }
+        System.out.println();
         // --- Sequence Diagram 1: Set Initial Budget Cycle ---
         System.out.println("--- Setting up a new budget cycle ---");
         LocalDate start = LocalDate.now();
@@ -64,12 +78,12 @@ public class Main {
         if (current != null) calcEngine.triggerMidnightRollover(current);
  
         // --- Sequence Diagram 6: Reset cycle ---
-        System.out.println("\n--- Resetting cycle ---");
+        /*System.out.println("\n--- Resetting cycle ---");
         current = cycleDAO.getCurrentCycle();
         if (current != null) {
             boolean reset = cycleManager.resetCycle(current.getCycleId());
             System.out.println("Reset successful: " + reset);
-        }
+        }*/
  
         // Cleanup
         DatabaseHelper.getInstance().closeConnection();

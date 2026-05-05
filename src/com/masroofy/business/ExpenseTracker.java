@@ -27,6 +27,9 @@ public class ExpenseTracker {
         int randomId = (int)(Math.random() * 1000);
         Transaction newExpense = new Transaction(randomId, amount, categoryId, note);
 
+        // NEW CHANGE: Linked the transaction to the current cycle's ID to prevent Foreign Key constraint errors.
+        newExpense.setCycleId(currentCycle.getCycleId());
+
         if (transactionDAO.saveTransaction(newExpense)) {
             currentCycle.deductAmount(amount);
             cycleDAO.saveCycle(currentCycle); // update balance in DB
