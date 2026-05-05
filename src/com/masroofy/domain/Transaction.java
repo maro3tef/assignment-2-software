@@ -27,6 +27,6 @@ public class Transaction {
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
  
     public String getTransactionDetails() {
-        return "ID: " + transactionId + " | Amount: " + amount + " | Note: " + note + " | Date: " + timestamp;
+        return "ID: " + transactionId + "     | Amount:        " + amount + "      | Note:         " + note + "     | Date:         " + timestamp;
     }
 }
