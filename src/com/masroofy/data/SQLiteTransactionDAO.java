@@ -121,7 +121,27 @@ public class SQLiteTransactionDAO implements ITransactionDAO {
     // -----------------------------------------------------------------------
     // Helper: map a ResultSet row → Transaction object
     // -----------------------------------------------------------------------
+// NEW: Implementation for updating the Database row
+    @Override
+    public boolean updateTransaction(Transaction t) {
+        String sql = "UPDATE " + DatabaseHelper.TABLE_TRANSACTIONS
+                + " SET " + DatabaseHelper.TRANS_COL_AMOUNT + " = ?, "
+                + DatabaseHelper.TRANS_COL_CATEGORY_ID + " = ?, "
+                + DatabaseHelper.TRANS_COL_NOTE + " = ? "
+                + "WHERE " + DatabaseHelper.TRANS_COL_ID + " = ?;";
 
+        try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
+            pstmt.setDouble(1, t.getAmount());
+            pstmt.setInt(2, t.getCategoryId());
+            pstmt.setString(3, t.getNote());
+            pstmt.setInt(4, t.getTransactionId());
+
+            return pstmt.executeUpdate() == 1;
+        } catch (SQLException e) {
+            System.err.println("updateTransaction failed: " + e.getMessage());
+            return false;
+        }
+    }
     private Transaction mapRowToTransaction(ResultSet rs) throws SQLException {
         int    id         = rs.getInt   (DatabaseHelper.TRANS_COL_ID);
         double amount     = rs.getDouble(DatabaseHelper.TRANS_COL_AMOUNT);

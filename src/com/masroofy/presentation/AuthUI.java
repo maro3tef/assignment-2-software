@@ -2,11 +2,13 @@ package com.masroofy.presentation;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 import com.masroofy.business.CalculationEngine;
 import com.masroofy.business.CycleManager;
 import com.masroofy.business.ExpenseTracker;
 import com.masroofy.data.ITransactionDAO;
+import com.masroofy.domain.BudgetCycle;
 import com.masroofy.domain.UserProfile;
 
 public class AuthUI extends JFrame {
@@ -15,13 +17,11 @@ public class AuthUI extends JFrame {
     private JLabel messageLabel;
     private UserProfile userProfile;
 
-    // FIX: Added dependencies to pass down to DashboardUI
     private CycleManager cycleManager;
     private CalculationEngine calcEngine;
     private ExpenseTracker expenseTracker;
     private ITransactionDAO transactionDAO;
 
-    // FIX: Updated constructor to accept business dependencies
     public AuthUI(UserProfile userProfile, CycleManager cycleManager, CalculationEngine calcEngine,
                   ExpenseTracker expenseTracker, ITransactionDAO transactionDAO) {
 
@@ -35,14 +35,14 @@ public class AuthUI extends JFrame {
         setSize(300, 200);
         setLayout(new FlowLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // FIX: Centers the window on screen
+        setLocationRelativeTo(null);
 
         pinField = new JPasswordField(10);
         messageLabel = new JLabel(" ");
 
         JButton btn = new JButton("Login");
 
-        add(new JLabel("PIN (Hint: 1234):")); // FIX: Added hint for easier testing
+        add(new JLabel("PIN (Hint: 1234):"));
         add(pinField);
         add(btn);
         add(messageLabel);
@@ -59,11 +59,18 @@ public class AuthUI extends JFrame {
     private void verify() {
         String pin = new String(pinField.getPassword());
 
-        // FIX: Changed VerifyPIN to verifyPIN (case-sensitive fix)
         if (userProfile.verifyPIN(pin)) {
-            // FIX: Passed dependencies to DashboardUI
-            new DashboardUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
-            dispose();
+            // Check if there are any existing budget cycles
+            List<BudgetCycle> history = cycleManager.getCycleHistory();
+
+            if (history == null || history.isEmpty()) {
+                // Database is empty. Route user to Setup Initial Cycle UI
+                new SetupCycleUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
+            } else {
+                // Existing cycle found. Route straight to Dashboard
+                new DashboardUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
+            }
+            dispose(); // Close Auth window
         } else {
             ShowValidationError("Wrong PIN");
         }
