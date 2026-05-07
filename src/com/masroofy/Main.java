@@ -8,12 +8,10 @@ import com.masroofy.data.DatabaseHelper;
 import com.masroofy.data.SQLiteBudgetCycleDAO;
 import com.masroofy.data.SQLiteTransactionDAO;
 import com.masroofy.domain.BudgetCycle;
-import com.masroofy.domain.Transaction;
 import com.masroofy.domain.UserProfile;
-import com.masroofy.presentation.AuthUI; // FIX: Imported AuthUI
+import com.masroofy.presentation.AuthUI;
 
-import javax.swing.SwingUtilities; // FIX: Imported SwingUtilities
-import java.time.LocalDate;
+import javax.swing.SwingUtilities;
 import java.util.List;
 
 public class Main {
@@ -24,7 +22,7 @@ public class Main {
         SQLiteBudgetCycleDAO cycleDAO       = new SQLiteBudgetCycleDAO();
         SQLiteTransactionDAO transactionDAO  = new SQLiteTransactionDAO();
         AlertingSystem       alertingSystem  = new AlertingSystem();
-        CalculationEngine    calcEngine      = new CalculationEngine();
+        CalculationEngine    calcEngine      = new CalculationEngine(cycleDAO);
 
         CycleManager   cycleManager   = new CycleManager(cycleDAO, calcEngine);
         ExpenseTracker expenseTracker = new ExpenseTracker(transactionDAO, cycleDAO, alertingSystem);
@@ -44,23 +42,16 @@ public class Main {
             }
         }
 
-        // Check if there is an active cycle for the UI to use, if not, create one
-        BudgetCycle current = cycleDAO.getCurrentCycle();
-        if(current == null) {
-            System.out.println("\n--- Setting up a new budget cycle for UI ---");
-            LocalDate start = LocalDate.now();
-            LocalDate end   = start.plusDays(9);
-            cycleManager.initCycle(start, end, 1000.0);
-        }
+        // NOTE: The hardcoded setup logic was removed from here.
+        // It is now correctly handled by the SetupCycleUI in the presentation layer.
 
-        // FIX: Add a JVM Shutdown Hook to safely close the DB when the user closes the app window.
-        // We cannot close it synchronously at the end of main() because the UI runs on a separate thread.
+        // Add a JVM Shutdown Hook to safely close the DB when the user closes the app window.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             DatabaseHelper.getInstance().closeConnection();
             System.out.println("\n=== Masroofy session complete ===");
         }));
 
-        // FIX: Launch the UI on the Event Dispatch Thread
+        // Launch the UI on the Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
             // Create a dummy user profile for testing (PIN is "1234")
             UserProfile dummyUser = new UserProfile(1, "1234", false);

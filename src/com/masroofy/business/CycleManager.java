@@ -31,10 +31,13 @@ public class CycleManager {
     public List<BudgetCycle> getCycleHistory() {
         return cycleDAO.getAllCycles();
     }
-
-    // Sequence Diagram 6
     public boolean resetCycle(int cycleId) {
-        System.out.println("Triggering data reset...");
         return cycleDAO.deleteCycle(cycleId);
+    }
+
+    // NEW: Sequence Diagram 6 - triggers a complete reset of all tables
+    public boolean triggerDataReset() {
+        System.out.println("Triggering complete data reset...");
+        return cycleDAO.deleteAllData();
     }
 }

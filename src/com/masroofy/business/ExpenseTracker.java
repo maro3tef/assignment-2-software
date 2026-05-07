@@ -16,39 +16,52 @@ public class ExpenseTracker {
         this.cycleDAO = cycleDAO;
         this.alertingSystem = alertingSystem;
     }
+
     public boolean logTransaction(double amount, int categoryId, String note) {
         BudgetCycle currentCycle = cycleDAO.getCurrentCycle();
-        if (currentCycle == null) {
-            System.out.println("Error: No active budget cycle found.");
-            return false;
-        }
+        if (currentCycle == null) return false;
 
-        // Generate a random ID for console simulation
         int randomId = (int)(Math.random() * 1000);
         Transaction newExpense = new Transaction(randomId, amount, categoryId, note);
-
-        // NEW CHANGE: Linked the transaction to the current cycle's ID to prevent Foreign Key constraint errors.
         newExpense.setCycleId(currentCycle.getCycleId());
 
         if (transactionDAO.saveTransaction(newExpense)) {
             currentCycle.deductAmount(amount);
-            cycleDAO.saveCycle(currentCycle); // update balance in DB
+            cycleDAO.saveCycle(currentCycle);
 
-            // Check thresholds after adding expense
             double spent = currentCycle.getTotalAllowance() - currentCycle.getRemainingBalance();
             alertingSystem.checkThreshold(spent, currentCycle.getTotalAllowance());
-
             return true;
         }
         return false;
     }
-    // Sequence Diagram 5
+
     public boolean deleteTransaction(int transactionId, double refundAmount) {
         if (transactionDAO.deleteTransaction(transactionId)) {
             BudgetCycle currentCycle = cycleDAO.getCurrentCycle();
             if (currentCycle != null) {
                 currentCycle.addAmount(refundAmount);
-                cycleDAO.saveCycle(currentCycle); // update balance in DB
+                cycleDAO.saveCycle(currentCycle);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // NEW: Diagram 5 - Handles balance recalculation when editing an amount
+    public boolean editTransaction(Transaction updatedTransaction, double oldAmount) {
+        // Step 1: Update the transaction record in the DB
+        if (transactionDAO.updateTransaction(updatedTransaction)) {
+
+            BudgetCycle currentCycle = cycleDAO.getCurrentCycle();
+            if (currentCycle != null) {
+                // Math logic to adjust the cycle's balance
+                // E.g. If old expense was $100 and new is $60. Difference is $40 to add back.
+                double difference = oldAmount - updatedTransaction.getAmount();
+                currentCycle.addAmount(difference);
+
+                // Step 2: Save updated limit/balance
+                cycleDAO.saveCycle(currentCycle);
             }
             return true;
         }

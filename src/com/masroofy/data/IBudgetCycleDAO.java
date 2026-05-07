@@ -9,4 +9,5 @@ public interface IBudgetCycleDAO {
     BudgetCycle getCurrentCycle();
     boolean deleteCycle(int cycleId);
     List<BudgetCycle> getAllCycles();
+    boolean deleteAllData();
 }

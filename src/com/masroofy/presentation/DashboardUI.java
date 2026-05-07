@@ -2,28 +2,32 @@ package com.masroofy.presentation;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.masroofy.business.CycleManager;
 import com.masroofy.business.CalculationEngine;
 import com.masroofy.business.ExpenseTracker;
 import com.masroofy.data.ITransactionDAO;
 import com.masroofy.domain.BudgetCycle;
+import com.masroofy.domain.Transaction;
 import com.masroofy.domain.UserProfile;
-import java.util.List;
 
 public class DashboardUI extends JFrame {
 
     private JLabel balanceLabel;
     private JLabel dailyLimitLabel;
+    private PieChartPanel chartPanel; // NEW: The pie chart component
 
     private CycleManager cycleManager;
     private CalculationEngine calculationEngine;
-    private ExpenseTracker expenseTracker; // FIX: Added to pass to ExpenseEntryUI
-    private ITransactionDAO transactionDAO; // FIX: Added to pass to HistoryUI
+    private ExpenseTracker expenseTracker;
+    private ITransactionDAO transactionDAO;
 
     private UserProfile userProfile;
     private BudgetCycle currentCycle;
 
-    // FIX: Constructor now accepts dependencies instead of trying to instantiate them without args
     public DashboardUI(UserProfile userProfile, CycleManager cycleManager,
                        CalculationEngine calculationEngine, ExpenseTracker expenseTracker,
                        ITransactionDAO transactionDAO) {
@@ -35,30 +39,55 @@ public class DashboardUI extends JFrame {
         this.transactionDAO = transactionDAO;
 
         setTitle("Dashboard");
-        setSize(400, 300);
-        setLayout(new FlowLayout());
+        setSize(450, 450); // Increased size to fit the chart
+        setLayout(new FlowLayout(FlowLayout.CENTER, 10, 20));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // FIX: Center on screen
+        setLocationRelativeTo(null);
 
         balanceLabel = new JLabel("Remaining Balance: 0");
         dailyLimitLabel = new JLabel("Daily Limit: 0");
+        balanceLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        dailyLimitLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
         JButton addBtn = new JButton("Add Expense");
         JButton historyBtn = new JButton("History");
+        JButton resetBtn = new JButton("Reset All Data");
+        resetBtn.setForeground(Color.RED);
 
+        chartPanel = new PieChartPanel(); // Initialize chart
+
+        // Add components to layout
         add(balanceLabel);
         add(dailyLimitLabel);
+        add(chartPanel); // Add the chart in the middle of the screen
         add(addBtn);
         add(historyBtn);
+        add(resetBtn);
 
-        // FIX: Pass appropriate dependencies to child UIs
         addBtn.addActionListener(e -> new ExpenseEntryUI(userProfile, currentCycle, this, expenseTracker));
 
         historyBtn.addActionListener(e -> {
             if (currentCycle != null) {
-                new HistoryUI(userProfile, transactionDAO).show(currentCycle.getCycleId());
+                new HistoryUI(userProfile, transactionDAO,expenseTracker,this).show(currentCycle.getCycleId());
             } else {
                 JOptionPane.showMessageDialog(this, "No active cycle available.");
+            }
+        });
+
+        resetBtn.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Are you sure you want to permanently delete all budget cycles and transactions?",
+                    "Confirm Reset", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean success = cycleManager.triggerDataReset();
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "All data cleared successfully.", "Reset Complete", JOptionPane.INFORMATION_MESSAGE);
+                    new SetupCycleUI(userProfile, cycleManager, calculationEngine, expenseTracker, transactionDAO);
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to clear data. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -68,29 +97,41 @@ public class DashboardUI extends JFrame {
     }
 
     private void loadCycle() {
-        // FIX: Ensure cycle manager is getting the latest cycle from DB history
         List<BudgetCycle> cycles = cycleManager.getCycleHistory();
-        if (!cycles.isEmpty()) {
-            currentCycle = cycles.get(0); // Assuming the first item is the latest
-        }
+        currentCycle = cycles.isEmpty() ? null : cycles.get(0);
 
         if (currentCycle != null) {
-            // FIX: Changed CalcSafeDailyLimit to calcSafeDailyLimit (case-sensitive fix)
             double limit = calculationEngine.calcSafeDailyLimit(currentCycle);
             UpdateDailyLimitDisplay(limit);
             ShowRemainingBalance(currentCycle.getRemainingBalance());
+
+            // NEW: Step 9 - Calculate category totals and update the chart
+            updateChartData();
         }
     }
 
+    private void updateChartData() {
+        List<Transaction> transactions = transactionDAO.getAllTransactionsByCycle(currentCycle.getCycleId());
+        Map<String, Double> categoryTotals = new HashMap<>();
+
+        for (Transaction t : transactions) {
+            // Grouping by 'note' as it acts as the category identifier in the current UI implementation
+            String categoryName = t.getNote() != null ? t.getNote() : "Uncategorized";
+            categoryTotals.put(categoryName, categoryTotals.getOrDefault(categoryName, 0.0) + t.getAmount());
+        }
+
+        chartPanel.setTotals(categoryTotals);
+    }
+
     public void UpdateDailyLimitDisplay(double limit) {
-        dailyLimitLabel.setText("Daily Limit: " + String.format("%.2f", limit)); // FIX: Formatting to 2 decimal places
+        dailyLimitLabel.setText("Daily Limit: " + String.format("%.2f", limit));
     }
 
     public void ShowRemainingBalance(double amount) {
-        balanceLabel.setText("Remaining Balance: " + String.format("%.2f", amount)); // FIX: Formatting
+        balanceLabel.setText("Remaining Balance: " + String.format("%.2f", amount));
     }
 
     public void refreshAfterTransaction() {
-        loadCycle();
+        loadCycle(); // Reloads cycle math and refreshes the chart data
     }
 }

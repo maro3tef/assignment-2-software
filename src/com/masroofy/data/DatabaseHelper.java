@@ -31,7 +31,8 @@ public class DatabaseHelper {
     public static final String CYCLES_COL_END_DATE   = "end_date";
     public static final String CYCLES_COL_ALLOWANCE  = "total_allowance";
     public static final String CYCLES_COL_BALANCE    = "remaining_balance";
-
+    public static final String CYCLES_COL_LAST_ROLLOVER = "last_rollover"; // NEW COLUMN
+    public static final String CYCLES_COL_DAILY_LIMIT   = "daily_limit";
     // -----------------------------------------------------------------------
     // Table: transactions
     // -----------------------------------------------------------------------
@@ -88,35 +89,38 @@ public class DatabaseHelper {
     private void initSchema() throws SQLException {
         Statement stmt = connection.createStatement();
 
-        // budget_cycles table
+        // 1. Create table with new columns if it's a fresh installation
         stmt.execute(
-            "CREATE TABLE IF NOT EXISTS " + TABLE_CYCLES + " ("
-            + CYCLES_COL_ID         + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + CYCLES_COL_START_DATE + " TEXT NOT NULL, "
-            + CYCLES_COL_END_DATE   + " TEXT NOT NULL, "
-            + CYCLES_COL_ALLOWANCE  + " REAL NOT NULL, "
-            + CYCLES_COL_BALANCE    + " REAL NOT NULL"
-            + ");"
+                "CREATE TABLE IF NOT EXISTS " + TABLE_CYCLES + " ("
+                        + CYCLES_COL_ID         + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + CYCLES_COL_START_DATE + " TEXT NOT NULL, "
+                        + CYCLES_COL_END_DATE   + " TEXT NOT NULL, "
+                        + CYCLES_COL_ALLOWANCE  + " REAL NOT NULL, "
+                        + CYCLES_COL_BALANCE    + " REAL NOT NULL, "
+                        + CYCLES_COL_LAST_ROLLOVER + " TEXT, "
+                        + CYCLES_COL_DAILY_LIMIT + " REAL DEFAULT 0.0"
+                        + ");"
         );
 
-        // transactions table
+        // 2. Safely add columns for existing users (Migration)
+        try { stmt.execute("ALTER TABLE " + TABLE_CYCLES + " ADD COLUMN " + CYCLES_COL_LAST_ROLLOVER + " TEXT;"); } catch (SQLException e) { /* Exists */ }
+        try { stmt.execute("ALTER TABLE " + TABLE_CYCLES + " ADD COLUMN " + CYCLES_COL_DAILY_LIMIT + " REAL DEFAULT 0.0;"); } catch (SQLException e) { /* Exists */ }
+
         stmt.execute(
-            "CREATE TABLE IF NOT EXISTS " + TABLE_TRANSACTIONS + " ("
-            + TRANS_COL_ID          + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + TRANS_COL_CYCLE_ID    + " INTEGER NOT NULL, "
-            + TRANS_COL_AMOUNT      + " REAL NOT NULL, "
-            + TRANS_COL_CATEGORY_ID + " INTEGER NOT NULL, "
-            + TRANS_COL_NOTE        + " TEXT, "
-            + TRANS_COL_TIMESTAMP   + " TEXT NOT NULL, "
-            + "FOREIGN KEY (" + TRANS_COL_CYCLE_ID + ") REFERENCES "
-                + TABLE_CYCLES + "(" + CYCLES_COL_ID + ")"
-            + ");"
+                "CREATE TABLE IF NOT EXISTS " + TABLE_TRANSACTIONS + " ("
+                        + TRANS_COL_ID          + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + TRANS_COL_CYCLE_ID    + " INTEGER NOT NULL, "
+                        + TRANS_COL_AMOUNT      + " REAL NOT NULL, "
+                        + TRANS_COL_CATEGORY_ID + " INTEGER NOT NULL, "
+                        + TRANS_COL_NOTE        + " TEXT, "
+                        + TRANS_COL_TIMESTAMP   + " TEXT NOT NULL, "
+                        + "FOREIGN KEY (" + TRANS_COL_CYCLE_ID + ") REFERENCES "
+                        + TABLE_CYCLES + "(" + CYCLES_COL_ID + ")"
+                        + ");"
         );
 
         stmt.close();
-        System.out.println("Database schema initialized successfully.");
     }
-
     // -----------------------------------------------------------------------
     // Cleanup
     // -----------------------------------------------------------------------
