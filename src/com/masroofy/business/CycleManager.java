@@ -4,19 +4,35 @@ import com.masroofy.domain.BudgetCycle;
 import java.time.LocalDate;
 import java.util.List; // NEW CHANGE: Imported List for the getCycleHistory method
 
+/**
+ * The type Cycle manager.
+ */
 public class CycleManager {
     private IBudgetCycleDAO cycleDAO;
     private CalculationEngine calcEngine;
 
-    // Dependency Injection
+    /**
+     * Instantiates a new Cycle manager.
+     *
+     * @param cycleDAO   the cycle dao
+     * @param calcEngine the calc engine
+     */
+// Dependency Injection
     public CycleManager(IBudgetCycleDAO cycleDAO, CalculationEngine calcEngine) {
         this.cycleDAO = cycleDAO;
         this.calcEngine = calcEngine;
     }
 
-    // Sequence Diagram 1: Set Initial Budget Cycle
+    /**
+     * Init cycle boolean.
+     *
+     * @param startDate the start date
+     * @param endDate   the end date
+     * @param amount    the amount
+     * @return the boolean
+     */
+// 1# Set Initial Budget Cycle
     public boolean initCycle(LocalDate startDate, LocalDate endDate, double amount) {
-        // NEW CHANGE: Changed hardcoded ID from 1 to 0 so the database knows to auto-increment it.
         BudgetCycle newCycle = new BudgetCycle(0, startDate, endDate, amount);
 
         boolean saved = cycleDAO.saveCycle(newCycle);
@@ -27,15 +43,32 @@ public class CycleManager {
         return saved;
     }
 
-    // NEW CHANGE: Added this new method to allow retrieving all historical cycles
+    /**
+     * Gets cycle history.
+     *
+     * @return the cycle history
+     */
+
     public List<BudgetCycle> getCycleHistory() {
         return cycleDAO.getAllCycles();
     }
+
+    /**
+     * Reset cycle boolean.
+     *
+     * @param cycleId the cycle id
+     * @return the boolean
+     */
     public boolean resetCycle(int cycleId) {
         return cycleDAO.deleteCycle(cycleId);
     }
 
-    // NEW: Sequence Diagram 6 - triggers a complete reset of all tables
+    /**
+     * Trigger data reset boolean.
+     *
+     * @return the boolean
+     */
+//   6 # triggers a complete reset of all tables
     public boolean triggerDataReset() {
         System.out.println("Triggering complete data reset...");
         return cycleDAO.deleteAllData();

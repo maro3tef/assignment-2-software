@@ -14,6 +14,9 @@ import com.masroofy.domain.BudgetCycle;
 import com.masroofy.domain.Transaction;
 import com.masroofy.domain.UserProfile;
 
+/**
+ * The type Dashboard ui.
+ */
 public class DashboardUI extends JFrame {
 
     private JLabel balanceLabel;
@@ -28,6 +31,15 @@ public class DashboardUI extends JFrame {
     private UserProfile userProfile;
     private BudgetCycle currentCycle;
 
+    /**
+     * Instantiates a new Dashboard ui.
+     *
+     * @param userProfile       the user profile
+     * @param cycleManager      the cycle manager
+     * @param calculationEngine the calculation engine
+     * @param expenseTracker    the expense tracker
+     * @param transactionDAO    the transaction dao
+     */
     public DashboardUI(UserProfile userProfile, CycleManager cycleManager,
                        CalculationEngine calculationEngine, ExpenseTracker expenseTracker,
                        ITransactionDAO transactionDAO) {
@@ -54,12 +66,12 @@ public class DashboardUI extends JFrame {
         JButton resetBtn = new JButton("Reset All Data");
         resetBtn.setForeground(Color.RED);
 
-        chartPanel = new PieChartPanel(); // Initialize chart
+        chartPanel = new PieChartPanel();
 
-        // Add components to layout
+
         add(balanceLabel);
         add(dailyLimitLabel);
-        add(chartPanel); // Add the chart in the middle of the screen
+        add(chartPanel);
         add(addBtn);
         add(historyBtn);
         add(resetBtn);
@@ -105,7 +117,7 @@ public class DashboardUI extends JFrame {
             UpdateDailyLimitDisplay(limit);
             ShowRemainingBalance(currentCycle.getRemainingBalance());
 
-            // NEW: Step 9 - Calculate category totals and update the chart
+
             updateChartData();
         }
     }
@@ -115,7 +127,7 @@ public class DashboardUI extends JFrame {
         Map<String, Double> categoryTotals = new HashMap<>();
 
         for (Transaction t : transactions) {
-            // Grouping by 'note' as it acts as the category identifier in the current UI implementation
+
             String categoryName = t.getNote() != null ? t.getNote() : "Uncategorized";
             categoryTotals.put(categoryName, categoryTotals.getOrDefault(categoryName, 0.0) + t.getAmount());
         }
@@ -123,14 +135,27 @@ public class DashboardUI extends JFrame {
         chartPanel.setTotals(categoryTotals);
     }
 
+    /**
+     * Update daily limit display.
+     *
+     * @param limit the limit
+     */
     public void UpdateDailyLimitDisplay(double limit) {
         dailyLimitLabel.setText("Daily Limit: " + String.format("%.2f", limit));
     }
 
+    /**
+     * Show remaining balance.
+     *
+     * @param amount the amount
+     */
     public void ShowRemainingBalance(double amount) {
         balanceLabel.setText("Remaining Balance: " + String.format("%.2f", amount));
     }
 
+    /**
+     * Refresh after transaction.
+     */
     public void refreshAfterTransaction() {
         loadCycle(); // Reloads cycle math and refreshes the chart data
     }

@@ -6,6 +6,9 @@ import com.masroofy.business.ExpenseTracker;
 import com.masroofy.domain.BudgetCycle;
 import com.masroofy.domain.UserProfile;
 
+/**
+ * The type Expense entry ui.
+ */
 public class ExpenseEntryUI extends JFrame {
 
     private JTextField amountField;
@@ -16,8 +19,15 @@ public class ExpenseEntryUI extends JFrame {
     private BudgetCycle currentCycle;
     private DashboardUI dashboardUI;
 
-    // FIX: Accept injected ExpenseTracker instead of instantiating it with missing parameters
-    public ExpenseEntryUI(UserProfile userProfile, BudgetCycle currentCycle,
+    /**
+     * Instantiates a new Expense entry ui.
+     *
+     * @param userProfile    the user profile
+     * @param currentCycle   the current cycle
+     * @param dashboardUI    the dashboard ui
+     * @param expenseTracker the expense tracker
+     */
+ public ExpenseEntryUI(UserProfile userProfile, BudgetCycle currentCycle,
                           DashboardUI dashboardUI, ExpenseTracker expenseTracker) {
 
         this.expenseTracker = expenseTracker;
@@ -27,7 +37,7 @@ public class ExpenseEntryUI extends JFrame {
         setTitle("Add Expense");
         setSize(300, 250);
         setLayout(new FlowLayout());
-        setLocationRelativeTo(null); // FIX: Center on screen
+        setLocationRelativeTo(null);
 
         amountField = new JTextField(10);
         categoryField = new JTextField(10);
@@ -38,7 +48,7 @@ public class ExpenseEntryUI extends JFrame {
 
         add(new JLabel("Amount"));
         add(amountField);
-        add(new JLabel("Category/Note")); // FIX: Updated label
+        add(new JLabel("Category/Note"));
         add(categoryField);
         add(addBtn);
         add(cancelBtn);
@@ -50,10 +60,12 @@ public class ExpenseEntryUI extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Capture expense details.
+     */
     public void captureExpenseDetails() {
         String amountText = amountField.getText().trim();
-        String note = categoryField.getText().trim(); // FIX: Treat this as note/category name
-
+        String note = categoryField.getText().trim();
         if (amountText.isEmpty() || note.isEmpty()) {
             showErrorMessage("All fields required");
             return;
@@ -68,8 +80,6 @@ public class ExpenseEntryUI extends JFrame {
             return;
         }
 
-        // FIX: Match the signature of logTransaction(amount, categoryId, note).
-        // Using a dummy category ID (1) for now since Categories are not fully implemented.
         boolean success = expenseTracker.logTransaction(amount, 1, note);
 
         if (success) {
@@ -77,7 +87,6 @@ public class ExpenseEntryUI extends JFrame {
             if (dashboardUI != null) {
                 dashboardUI.refreshAfterTransaction();
             }
-            // FIX: Delay closing so user sees success message briefly
             Timer timer = new Timer(1000, e -> dispose());
             timer.setRepeats(false);
             timer.start();
@@ -86,11 +95,21 @@ public class ExpenseEntryUI extends JFrame {
         }
     }
 
+    /**
+     * Show success message.
+     *
+     * @param msg the msg
+     */
     public void showSuccessMessage(String msg) {
         messageLabel.setText(msg);
         messageLabel.setForeground(Color.GREEN);
     }
 
+    /**
+     * Show error message.
+     *
+     * @param msg the msg
+     */
     public void showErrorMessage(String msg) {
         messageLabel.setText(msg);
         messageLabel.setForeground(Color.RED);

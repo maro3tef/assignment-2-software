@@ -11,6 +11,9 @@ import com.masroofy.business.ExpenseTracker;
 import com.masroofy.data.ITransactionDAO;
 import com.masroofy.domain.UserProfile;
 
+/**
+ * The type Setup cycle ui.
+ */
 public class SetupCycleUI extends JFrame {
 
     private JTextField amountField;
@@ -24,6 +27,15 @@ public class SetupCycleUI extends JFrame {
     private ExpenseTracker expenseTracker;
     private ITransactionDAO transactionDAO;
 
+    /**
+     * Instantiates a new Setup cycle ui.
+     *
+     * @param userProfile    the user profile
+     * @param cycleManager   the cycle manager
+     * @param calcEngine     the calc engine
+     * @param expenseTracker the expense tracker
+     * @param transactionDAO the transaction dao
+     */
     public SetupCycleUI(UserProfile userProfile, CycleManager cycleManager, CalculationEngine calcEngine,
                         ExpenseTracker expenseTracker, ITransactionDAO transactionDAO) {
 
@@ -35,12 +47,11 @@ public class SetupCycleUI extends JFrame {
 
         setTitle("Set Initial Budget Cycle");
         setSize(350, 250);
-        setLayout(new GridLayout(5, 2, 10, 10)); // Grid layout for neat form alignment
+        setLayout(new GridLayout(5, 2, 10, 10));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Center on screen
+        setLocationRelativeTo(null);
 
         amountField = new JTextField();
-        // Pre-fill with today's date to help the user with formatting
         startDateField = new JTextField(LocalDate.now().toString());
         endDateField = new JTextField(LocalDate.now().plusDays(30).toString());
         messageLabel = new JLabel(" ");
@@ -54,9 +65,9 @@ public class SetupCycleUI extends JFrame {
         add(startDateField);
         add(new JLabel("  End Date (YYYY-MM-DD):"));
         add(endDateField);
-        add(new JLabel("")); // Spacer
+        add(new JLabel(""));
         add(saveBtn);
-        add(new JLabel("")); // Spacer
+        add(new JLabel(""));
         add(messageLabel);
 
         saveBtn.addActionListener(e -> captureCycleDetails());
@@ -79,13 +90,13 @@ public class SetupCycleUI extends JFrame {
                 return;
             }
 
-            // Calls Step 2 in Sequence Diagram 1
+
             boolean success = cycleManager.initCycle(start, end, amount);
 
             if (success) {
-                // Proceed to Dashboard
+
                 new DashboardUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
-                dispose(); // Close setup window
+                dispose();
             } else {
                 messageLabel.setText("Database error saving cycle.");
             }

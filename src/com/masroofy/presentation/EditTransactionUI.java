@@ -5,6 +5,9 @@ import java.awt.*;
 import com.masroofy.business.ExpenseTracker;
 import com.masroofy.domain.Transaction;
 
+/**
+ * The type Edit transaction ui.
+ */
 public class EditTransactionUI extends JFrame {
 
     private JTextField amountField;
@@ -17,6 +20,14 @@ public class EditTransactionUI extends JFrame {
     private DashboardUI dashboardUI;
     private double oldAmount;
 
+    /**
+     * Instantiates a new Edit transaction ui.
+     *
+     * @param transaction    the transaction
+     * @param expenseTracker the expense tracker
+     * @param historyUI      the history ui
+     * @param dashboardUI    the dashboard ui
+     */
     public EditTransactionUI(Transaction transaction, ExpenseTracker expenseTracker,
                              HistoryUI historyUI, DashboardUI dashboardUI) {
         this.transaction = transaction;
@@ -24,7 +35,7 @@ public class EditTransactionUI extends JFrame {
         this.historyUI = historyUI;
         this.dashboardUI = dashboardUI;
 
-        // We capture the old amount so we know how much to refund/deduct the budget later
+
         this.oldAmount = transaction.getAmount();
 
         setTitle("Edit Transaction");
@@ -32,7 +43,7 @@ public class EditTransactionUI extends JFrame {
         setLayout(new FlowLayout());
         setLocationRelativeTo(null);
 
-        // Pre-fill the details from the selected transaction
+
         amountField = new JTextField(String.valueOf(transaction.getAmount()), 10);
         categoryField = new JTextField(transaction.getNote(), 10);
         messageLabel = new JLabel(" ");
@@ -61,18 +72,18 @@ public class EditTransactionUI extends JFrame {
 
             if (newAmount <= 0) throw new Exception();
 
-            // Update the object in memory
+
             transaction.setAmount(newAmount);
             transaction.setNote(newNote);
 
-            // Execute Business logic (Validate and update data -> Update record)
+
             boolean success = expenseTracker.editTransaction(transaction, oldAmount);
 
             if (success) {
                 messageLabel.setText("Transaction Updated");
                 messageLabel.setForeground(Color.GREEN);
 
-                // Triggers "Recalculate Safe Daily limit" via the UI reload
+
                 if (historyUI != null) historyUI.refreshHistory();
                 if (dashboardUI != null) dashboardUI.refreshAfterTransaction();
 

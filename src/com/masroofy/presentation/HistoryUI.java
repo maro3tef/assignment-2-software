@@ -8,6 +8,9 @@ import com.masroofy.domain.UserProfile;
 import com.masroofy.data.ITransactionDAO;
 import com.masroofy.business.ExpenseTracker;
 
+/**
+ * The type History ui.
+ */
 public class HistoryUI extends JFrame {
 
     private DefaultListModel<Transaction> listModel;
@@ -20,6 +23,14 @@ public class HistoryUI extends JFrame {
 
     private int currentCycleId;
 
+    /**
+     * Instantiates a new History ui.
+     *
+     * @param userProfile    the user profile
+     * @param transactionDAO the transaction dao
+     * @param expenseTracker the expense tracker
+     * @param dashboardUI    the dashboard ui
+     */
     public HistoryUI(UserProfile userProfile, ITransactionDAO transactionDAO,
                      ExpenseTracker expenseTracker, DashboardUI dashboardUI) {
         this.userProfile = userProfile;
@@ -32,12 +43,10 @@ public class HistoryUI extends JFrame {
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
 
-        // UI CHANGE: Changed JTextArea to an interactive JList
         listModel = new DefaultListModel<>();
         transactionList = new JList<>(listModel);
         transactionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Custom renderer formats the transaction nicely in the list
         transactionList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -51,7 +60,6 @@ public class HistoryUI extends JFrame {
 
         add(new JScrollPane(transactionList), BorderLayout.CENTER);
 
-        // Action Buttons Panel
         JPanel btnPanel = new JPanel();
         JButton editBtn = new JButton("Edit");
         JButton deleteBtn = new JButton("Delete");
@@ -60,7 +68,6 @@ public class HistoryUI extends JFrame {
         btnPanel.add(deleteBtn);
         add(btnPanel, BorderLayout.SOUTH);
 
-        // Edit Action (Sequence Diagram 5 trigger)
         editBtn.addActionListener(e -> {
             Transaction selected = transactionList.getSelectedValue();
             if (selected != null) {
@@ -70,7 +77,6 @@ public class HistoryUI extends JFrame {
             }
         });
 
-        // Delete Action
         deleteBtn.addActionListener(e -> {
             Transaction selected = transactionList.getSelectedValue();
             if (selected != null) {
@@ -91,12 +97,20 @@ public class HistoryUI extends JFrame {
         });
     }
 
+    /**
+     * Show.
+     *
+     * @param cycleId the cycle id
+     */
     public void show(int cycleId) {
         this.currentCycleId = cycleId;
         refreshHistory();
         setVisible(true);
     }
 
+    /**
+     * Refresh history.
+     */
     public void refreshHistory() {
         listModel.clear();
         List<Transaction> list = transactionDAO.getAllTransactionsByCycle(currentCycleId);

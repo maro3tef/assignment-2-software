@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"com.masroofy"},{"l":"com.masroofy.business"},{"l":"com.masroofy.data"},{"l":"com.masroofy.domain"},{"l":"com.masroofy.presentation"}];updateSearchResults();

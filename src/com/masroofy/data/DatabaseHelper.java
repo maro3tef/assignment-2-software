@@ -7,12 +7,12 @@ import java.sql.Statement;
 
 /**
  * DatabaseHelper
- *
+ * <p>
  * Manages the creation and lifecycle of the local SQLite database.
  * Acts as the single source of truth for the schema: table names,
  * column names, and seed data. All DAO classes obtain their
  * Connection through this class.
- *
+ * <p>
  * Uses a singleton pattern so only one connection is open at a time.
  */
 public class DatabaseHelper {
@@ -22,26 +22,71 @@ public class DatabaseHelper {
     // -----------------------------------------------------------------------
     private static final String DB_URL = "jdbc:sqlite:masroofy.db";
 
-    // -----------------------------------------------------------------------
+    /**
+     * The constant TABLE_CYCLES.
+     */
+// -----------------------------------------------------------------------
     // Table: budget_cycles
     // -----------------------------------------------------------------------
     public static final String TABLE_CYCLES          = "budget_cycles";
+    /**
+     * The constant CYCLES_COL_ID.
+     */
     public static final String CYCLES_COL_ID         = "cycle_id";
+    /**
+     * The constant CYCLES_COL_START_DATE.
+     */
     public static final String CYCLES_COL_START_DATE = "start_date";
+    /**
+     * The constant CYCLES_COL_END_DATE.
+     */
     public static final String CYCLES_COL_END_DATE   = "end_date";
+    /**
+     * The constant CYCLES_COL_ALLOWANCE.
+     */
     public static final String CYCLES_COL_ALLOWANCE  = "total_allowance";
+    /**
+     * The constant CYCLES_COL_BALANCE.
+     */
     public static final String CYCLES_COL_BALANCE    = "remaining_balance";
+    /**
+     * The constant CYCLES_COL_LAST_ROLLOVER.
+     */
     public static final String CYCLES_COL_LAST_ROLLOVER = "last_rollover"; // NEW COLUMN
+    /**
+     * The constant CYCLES_COL_DAILY_LIMIT.
+     */
     public static final String CYCLES_COL_DAILY_LIMIT   = "daily_limit";
-    // -----------------------------------------------------------------------
+    /**
+     * The constant TABLE_TRANSACTIONS.
+     */
+// -----------------------------------------------------------------------
     // Table: transactions
     // -----------------------------------------------------------------------
     public static final String TABLE_TRANSACTIONS      = "transactions";
+    /**
+     * The constant TRANS_COL_ID.
+     */
     public static final String TRANS_COL_ID            = "transaction_id";
+    /**
+     * The constant TRANS_COL_CYCLE_ID.
+     */
     public static final String TRANS_COL_CYCLE_ID      = "cycle_id";
+    /**
+     * The constant TRANS_COL_AMOUNT.
+     */
     public static final String TRANS_COL_AMOUNT        = "amount";
+    /**
+     * The constant TRANS_COL_CATEGORY_ID.
+     */
     public static final String TRANS_COL_CATEGORY_ID   = "category_id";
+    /**
+     * The constant TRANS_COL_NOTE.
+     */
     public static final String TRANS_COL_NOTE          = "note";
+    /**
+     * The constant TRANS_COL_TIMESTAMP.
+     */
     public static final String TRANS_COL_TIMESTAMP     = "timestamp";
 
     // -----------------------------------------------------------------------
@@ -52,10 +97,10 @@ public class DatabaseHelper {
 
     private DatabaseHelper() {
         try {
-            // Load the SQLite JDBC driver
+
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection(DB_URL);
-            // Enable foreign key enforcement
+
             connection.createStatement().execute("PRAGMA foreign_keys = ON;");
             initSchema();
         } catch (ClassNotFoundException e) {
@@ -65,7 +110,9 @@ public class DatabaseHelper {
         }
     }
 
-    /** Returns the singleton instance, creating it on first call. */
+    /**
+     * Returns the singleton instance, creating it on first call.  @return  the instance
+     */
     public static synchronized DatabaseHelper getInstance() {
         if (instance == null) {
             instance = new DatabaseHelper();
@@ -73,7 +120,9 @@ public class DatabaseHelper {
         return instance;
     }
 
-    /** Returns the open database connection for use by DAOs. */
+    /**
+     * Returns the open database connection for use by DAOs.  @return  the connection
+     */
     public Connection getConnection() {
         return connection;
     }
@@ -89,7 +138,6 @@ public class DatabaseHelper {
     private void initSchema() throws SQLException {
         Statement stmt = connection.createStatement();
 
-        // 1. Create table with new columns if it's a fresh installation
         stmt.execute(
                 "CREATE TABLE IF NOT EXISTS " + TABLE_CYCLES + " ("
                         + CYCLES_COL_ID         + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -102,7 +150,7 @@ public class DatabaseHelper {
                         + ");"
         );
 
-        // 2. Safely add columns for existing users (Migration)
+
         try { stmt.execute("ALTER TABLE " + TABLE_CYCLES + " ADD COLUMN " + CYCLES_COL_LAST_ROLLOVER + " TEXT;"); } catch (SQLException e) { /* Exists */ }
         try { stmt.execute("ALTER TABLE " + TABLE_CYCLES + " ADD COLUMN " + CYCLES_COL_DAILY_LIMIT + " REAL DEFAULT 0.0;"); } catch (SQLException e) { /* Exists */ }
 
@@ -125,7 +173,9 @@ public class DatabaseHelper {
     // Cleanup
     // -----------------------------------------------------------------------
 
-    /** Closes the database connection. Call this on application shutdown. */
+    /**
+     * Closes the database connection. Call this on application shutdown.
+     */
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

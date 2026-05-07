@@ -11,6 +11,9 @@ import com.masroofy.data.ITransactionDAO;
 import com.masroofy.domain.BudgetCycle;
 import com.masroofy.domain.UserProfile;
 
+/**
+ * The type Auth ui.
+ */
 public class AuthUI extends JFrame {
 
     private JPasswordField pinField;
@@ -22,6 +25,15 @@ public class AuthUI extends JFrame {
     private ExpenseTracker expenseTracker;
     private ITransactionDAO transactionDAO;
 
+    /**
+     * Instantiates a new Auth ui.
+     *
+     * @param userProfile    the user profile
+     * @param cycleManager   the cycle manager
+     * @param calcEngine     the calc engine
+     * @param expenseTracker the expense tracker
+     * @param transactionDAO the transaction dao
+     */
     public AuthUI(UserProfile userProfile, CycleManager cycleManager, CalculationEngine calcEngine,
                   ExpenseTracker expenseTracker, ITransactionDAO transactionDAO) {
 
@@ -52,6 +64,9 @@ public class AuthUI extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Prompt for pin.
+     */
     public void PromptForPIN() {
         setVisible(true);
     }
@@ -60,22 +75,27 @@ public class AuthUI extends JFrame {
         String pin = new String(pinField.getPassword());
 
         if (userProfile.verifyPIN(pin)) {
-            // Check if there are any existing budget cycles
+
             List<BudgetCycle> history = cycleManager.getCycleHistory();
 
             if (history == null || history.isEmpty()) {
-                // Database is empty. Route user to Setup Initial Cycle UI
+
                 new SetupCycleUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
             } else {
-                // Existing cycle found. Route straight to Dashboard
+
                 new DashboardUI(userProfile, cycleManager, calcEngine, expenseTracker, transactionDAO);
             }
-            dispose(); // Close Auth window
+            dispose();
         } else {
             ShowValidationError("Wrong PIN");
         }
     }
 
+    /**
+     * Show validation error.
+     *
+     * @param msg the msg
+     */
     public void ShowValidationError(String msg) {
         messageLabel.setText(msg);
         messageLabel.setForeground(Color.RED);

@@ -1,7 +1,16 @@
 package com.masroofy.business;
 
+/**
+ * The type Alerting system.
+ */
 public class AlertingSystem {
-    // Checks spending against total allowance
+    /**
+     * Check threshold.
+     *
+     * @param spent          the spent
+     * @param totalAllowance the total allowance
+     */
+
     public void checkThreshold(double spent, double totalAllowance) {
         if (totalAllowance <= 0) return;
 

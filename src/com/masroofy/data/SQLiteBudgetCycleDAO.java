@@ -7,10 +7,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Sq lite budget cycle dao.
+ */
 public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
 
     private final Connection dbConnection;
 
+    /**
+     * Instantiates a new Sq lite budget cycle dao.
+     */
     public SQLiteBudgetCycleDAO() {
         this.dbConnection = DatabaseHelper.getInstance().getConnection();
     }
@@ -85,7 +91,7 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
         }
     }
 
-    // NEW IMPLEMENTATION for Sequence Diagram 6: Wipes all data
+    // clearing data for seq diag 6
     @Override
     public boolean deleteAllData() {
         String deleteTransactions = "DELETE FROM " + DatabaseHelper.TABLE_TRANSACTIONS + ";";
@@ -94,10 +100,10 @@ public class SQLiteBudgetCycleDAO implements IBudgetCycleDAO {
         try {
             dbConnection.setAutoCommit(false);
             try (Statement stmt = dbConnection.createStatement()) {
-                // Matches Diagram Step 3: deleteRecord("Transaction", -1)
+                // diag 3
                 stmt.executeUpdate(deleteTransactions);
 
-                // Matches Diagram Step 5: deleteRecord("BudgetCycle", -1)
+                // diag 5
                 stmt.executeUpdate(deleteCycles);
             }
             dbConnection.commit();

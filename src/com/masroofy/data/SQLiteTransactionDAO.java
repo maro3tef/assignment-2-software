@@ -9,11 +9,11 @@ import java.util.List;
 
 /**
  * SQLiteTransactionDAO (DBC014)
- *
+ * <p>
  * Concrete implementation of ITransactionDAO.
  * Interacts directly with the local SQLite database to perform all
  * CRUD operations on the transactions table.
- *
+ * <p>
  * Obtains its Connection from the DatabaseHelper singleton, keeping
  * database configuration in one place (Open/Closed Principle).
  */
@@ -21,6 +21,9 @@ public class SQLiteTransactionDAO implements ITransactionDAO {
 
     private final Connection dbConnection;
 
+    /**
+     * Instantiates a new Sq lite transaction dao.
+     */
     public SQLiteTransactionDAO() {
         this.dbConnection = DatabaseHelper.getInstance().getConnection();
     }
@@ -118,10 +121,6 @@ public class SQLiteTransactionDAO implements ITransactionDAO {
         return transactions;
     }
 
-    // -----------------------------------------------------------------------
-    // Helper: map a ResultSet row → Transaction object
-    // -----------------------------------------------------------------------
-// NEW: Implementation for updating the Database row
     @Override
     public boolean updateTransaction(Transaction t) {
         String sql = "UPDATE " + DatabaseHelper.TABLE_TRANSACTIONS
