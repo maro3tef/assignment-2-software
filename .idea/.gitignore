@@ -1,0 +1,4 @@
+# Ignore user-specific IntelliJ files but keep project defaults
+*
+!.gitignore
+!libraries/*.xml
