@@ -25,7 +25,7 @@ Masroofy (derived from the Arabic word for "expenses") helps you take control of
 
 | Dashboard | Expense Entry | Transaction History |
 |-----------|---------------|-------------------|
-| *(screenshot)* | *(screenshot)* | *(screenshot)* |
+| <img width="1310" height="877" alt="dashboard" src="https://github.com/user-attachments/assets/25f0202e-0fcc-4c32-bfd8-12135b73a8fd" />| <img width="1309" height="873" alt="add_expense" src="https://github.com/user-attachments/assets/481bf447-c5ce-482b-a756-6ef42b1aa42b" />| <img width="1308" height="873" alt="history" src="https://github.com/user-attachments/assets/cc3c6d9c-d2de-40d8-93e9-35476a681b93" />|
 
 ---
 
